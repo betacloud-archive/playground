@@ -1,0 +1,101 @@
+---
+- name: Provision kubeadm test
+  hosts: all
+  remote_user: ubuntu
+  pre_tasks:
+    - name: update all packages
+      ansible.builtin.apt:
+        update_cache: true
+        name: "*"
+        state: latest
+      become: true
+    
+    - name: install some basic packages
+      ansible.builtin.apt:
+        name: 
+          - apt-transport-https
+          - htop
+          - tree
+          - jq
+          - tmux
+          - screen
+          - sshpass
+        state: latest
+      become: true
+
+  roles:
+    - role: geerlingguy.docker
+      become: true
+
+    - role: geerlingguy.kubernetes
+      vars:
+        kubernetes_version: '1.21'
+        kubernetes_pod_network:
+          cni: 'calico'
+          cidr: '192.168.0.0/16'
+        kubernetes_calico_manifest_file: https://docs.projectcalico.org/manifests/calico.yaml
+      become: true
+
+    - role: geerlingguy.helm
+      vars:
+        helm_version: 'v3.5.4'
+      become: true
+
+  tasks:
+    - name: create .kube folder
+      ansible.builtin.file:
+        path: "/home/{{ ansible_user }}/.kube"
+        state: directory
+
+    - name: copy kube config
+      ansible.builtin.copy:
+        remote_src: true
+        src: /etc/kubernetes/admin.conf
+        dest: "/home/{{ ansible_user }}/.kube/config"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: 0600
+      become: true
+
+    - name: add kubectl autocompletion
+      ansible.builtin.lineinfile:
+        path: "/home/{{ ansible_user }}/.bashrc"
+        line: "source <(kubectl completion bash)"
+
+    - name: add bitnami helm repo
+      community.kubernetes.helm_repository:
+        name: bitnami
+        repo_url: https://charts.bitnami.com/bitnami
+
+    - name: install metallb chart
+      community.kubernetes.helm:
+        release_name: metallb
+        release_namespace: metallb
+        create_namespace: true
+        update_repo_cache: true
+        chart_ref: bitnami/metallb
+
+    - name: install nginx-ingress chart
+      community.kubernetes.helm:
+        release_name: nginx
+        release_namespace: ingress-nginx
+        create_namespace: true
+        update_repo_cache: true
+        chart_ref: bitnami/nginx-ingress-controller
+        release_values:
+          hostNetwork: true
+
+    - name: install metrics server chart
+      community.kubernetes.helm:
+        release_name: metrics
+        release_namespace: kube-system
+        update_repo_cache: true
+        chart_ref: bitnami/metrics-server
+        release_values:
+          securePort: 4443
+          apiService:
+            create: true
+          extraArgs:
+            cert-dir: /tmp
+            kubelet-insecure-tls:
+            kubelet-preferred-address-types: "InternalIP,ExternalIP,Hostname"

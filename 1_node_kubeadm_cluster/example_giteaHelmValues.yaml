@@ -1,0 +1,19 @@
+---
+service:
+  http:
+    type: LoadBalancer
+ingress:
+  enabled: true
+persistence:
+  size: 1Gi
+gitea:
+  cache:
+    builtIn:
+      enabled: false
+  database:
+    builtIn:
+      postgresql:
+        enabled: false
+  config:
+    database:
+      DB_TYPE: sqlite3

@@ -1,0 +1,7 @@
+---
+- name: Provision Blueprint
+  hosts: all
+  tasks:
+    - name: Check connection
+      debug:
+        msg: "This works!"
