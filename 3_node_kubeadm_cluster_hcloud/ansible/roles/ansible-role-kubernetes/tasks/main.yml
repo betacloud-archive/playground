@@ -60,8 +60,6 @@
   delegate_to: "{{ item }}"
   delegate_facts: true
   with_items: "{{ groups['all'] }}"
-  loop_control:
-    pause: 60
 
 - include_tasks: node-setup.yml
   when: kubernetes_role == 'node'
