@@ -20,6 +20,7 @@
           - tmux
           - screen
           - sshpass
+          - open-iscsi
         state: latest
       become: true
 
@@ -46,7 +47,7 @@
         kubernetes_role: 'node'
         kubernetes_version: '1.21'
         kubernetes_join_command_extra_opts:
-          ' --control-plane --ignore-preflight-errors all'
+          '--control-plane --ignore-preflight-errors all'
       when: not inventory_hostname == ansible_play_hosts_all[0]
       become: true
 

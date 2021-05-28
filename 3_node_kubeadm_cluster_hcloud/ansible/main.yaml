@@ -19,6 +19,7 @@
           - tmux
           - screen
           - sshpass
+          - open-iscsi
         state: latest
 
     - name: select first control plane
@@ -36,16 +37,23 @@
       role: geerlingguy.docker
 
     - name: setup kubernetes cluster
-      role: geerlingguy.kubernetes
+      role: ansible-role-kubernetes
       vars:
-        kubernetes_version: '1.21'
+        kubernetes_calico_manifest_file:
+          'https://docs.projectcalico.org/manifests/calico.yaml'
+        kubernetes_config_cluster_configuration:
+          networking:
+            podSubnet: "{{ kubernetes_pod_network.cidr }}"
+          kubernetesVersion: "{{ kubernetes_version_kubeadm }}"
+          controlPlaneEndpoint: "{{ ansible_default_ipv4.address }}:6443"
+        kubernetes_kubeadm_init_extra_opts: '--upload-certs'
+        kubernetes_join_command_extra_opts:
+          "--control-plane --ignore-preflight-errors all --certificate-key
+           {{ kubernetes_join_command_certificate_key.stdout_lines[2] }}"
         kubernetes_pod_network:
           cni: 'calico'
           cidr: '192.168.0.0/16'
-        kubernetes_calico_manifest_file:
-          'https://docs.projectcalico.org/manifests/calico.yaml'
-        kubernetes_join_command_extra_opts:
-          ' --control-plane --ignore-preflight-errors all'
+        kubernetes_version: '1.21'
 
     - name: install helm
       role: geerlingguy.helm
@@ -53,19 +61,21 @@
         helm_version: 'v3.5.4'
 
   tasks:
-    - name: create .kube folder
-      ansible.builtin.file:
-        path: "/root/.kube"
-        state: directory
+    - name: On all control planes except the first one
+      block:
+        - name: Ensure .kube directory exists.
+          file:
+            path: ~/.kube
+            state: directory
+            mode: 0755
 
-    - name: copy kube config
-      ansible.builtin.copy:
-        remote_src: true
-        src: /etc/kubernetes/admin.conf
-        dest: "/root/.kube/config"
-        owner: "root"
-        group: "root"
-        mode: 0600
+        - name: Symlink the kubectl admin.conf to ~/.kube/conf.
+          file:
+            src: /etc/kubernetes/admin.conf
+            dest: ~/.kube/config
+            state: link
+            mode: 0644
+      when: not kubernetes_role == 'master'
 
     - name: add kubectl autocompletion
       ansible.builtin.lineinfile:
@@ -84,6 +94,12 @@
 
     - name: Only on first control plane
       block:
+        - name: Allow pods on all control plane nodes.
+          command: "kubectl taint nodes --all node-role.kubernetes.io/master-"
+          changed_when: false
+          failed_when: false
+          ignore_errors: true
+
         - name: install metallb chart
           community.kubernetes.helm:
             release_name: metallb
@@ -118,6 +134,10 @@
                 kubelet-preferred-address-types:
                   'InternalIP,ExternalIP,Hostname'
 
+        - name: Wait 1 minutes
+          ansible.builtin.pause:
+            minutes: 1
+
         - name: install longhorn chart
           community.kubernetes.helm:
             release_name: longhorn
@@ -125,4 +145,8 @@
             create_namespace: true
             update_repo_cache: true
             chart_ref: longhorn/longhorn
+            release_values:
+              ingress:
+                enabled: true
+                host: "longhorn.{{ ansible_default_ipv4.address }}.nip.io"
       when: kubernetes_role == 'master'
