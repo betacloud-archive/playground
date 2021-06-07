@@ -1,0 +1,33 @@
+---
+- name: prepare hosts
+  hosts: all
+  remote_user: ubuntu
+  pre_tasks:
+    - name: update all packages
+      apt:
+        update_cache: true
+        name: '*'
+        state: latest
+      become: true
+
+    - name: install some packages
+      apt:
+        name:
+          - apt-transport-https
+          - docker.io
+          - tree
+          - jq
+      become: true
+
+    - name: start docker
+      service:
+        name: docker
+        enabled: true
+        state: started
+      become: true
+  roles:
+    - name: setup vault cluster
+      role: hashicorp-vault-cluster-role
+      vars:
+        vault_unsealer_inv_group_name: unsealer
+        vault_cluster_inv_group_name: cluster

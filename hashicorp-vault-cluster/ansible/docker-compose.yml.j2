@@ -1,0 +1,23 @@
+---
+version: '3.5'
+
+services:
+  vault:
+    image: "{{ vault_image }}"
+    command: server -config=/vault/config -dev -dev-root-token-id={{ vault_token }} -dev-listen-address=0.0.0.0:8200
+    restart: unless-stopped
+    ports:
+      - "{{ vault_host }}:{{ vault_port }}:8200"
+    env_file:
+      - "{{ manager_configuration_directory }}/vault.env"
+    volumes:
+      - vault:/vault/file
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      # NOTE: If Vault is sealed the container is unhealthy
+      #
+      # 0 - unsealed
+      # 1 - error
+      # 2 - sealed
+      test: vault status -address http://127.0.0.1:8200
