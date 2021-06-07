@@ -15,6 +15,7 @@
         name:
           - apt-transport-https
           - docker.io
+          - python3-docker
           - tree
           - jq
       become: true
@@ -31,3 +32,4 @@
       vars:
         vault_unsealer_inv_group_name: unsealer
         vault_cluster_inv_group_name: cluster
+        vault_unsealer_port: 8202

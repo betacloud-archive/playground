@@ -19,7 +19,7 @@ resource "openstack_networking_floatingip_v2" "fip" {
   pool = var.vip_pool
 }
 
-resource "opentelekomcloud_compute_floatingip_associate_v2" "fip_assoc" {
+resource "openstack_compute_floatingip_associate_v2" "fip_assoc" {
   count = var.counter
 
   instance_id = element(openstack_compute_instance_v2.instance.*.id, count.index)

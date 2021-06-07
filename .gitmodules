@@ -1,3 +1,0 @@
-[submodule "hashicorp-vault-cluster/ansible/roles/hashicorp-vault-cluster-role"]
-	path = hashicorp-vault-cluster/ansible/roles/hashicorp-vault-cluster-role
-	url = git@github.com:tibeer/hashicorp-vault-cluster-role.git

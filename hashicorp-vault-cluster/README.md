@@ -4,7 +4,6 @@ Not much to see here ...
 
 ### ToDo
 
-- migrate everything from VMs to docker containers
 - integrate it into osism
 
 # Requirements

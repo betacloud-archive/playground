@@ -17,7 +17,7 @@ module "secgroup_vault" {
 
   project   = "${var.project}-vault"
   from_port = 8200
-  to_port   = 8202
+  to_port   = 8203
 }
 
 module "unsealer" {
