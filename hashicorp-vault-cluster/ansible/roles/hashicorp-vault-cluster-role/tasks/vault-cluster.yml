@@ -9,10 +9,6 @@
     src: cluster-config.hcl.j2
     dest: "{{ vault_cluster_config_path }}"
 
-#- name: CLUSTER - start vault server
-#  ansible.builtin.shell: "screen -dmS vault-cluster
-#    vault server -config={{ vault_cluster_config_path }}"
-
 - name: CLUSTER - start vault server
   community.docker.docker_container:
     name: vault-cluster
