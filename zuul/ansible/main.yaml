@@ -1,0 +1,22 @@
+---
+- name: prepare hosts
+  hosts: all
+  remote_user: ubuntu
+  pre_tasks:
+    - name: install some packages
+      apt:
+        update_cache: true
+        name:
+          - apt-transport-https
+          - docker.io
+          - docker-compose
+          - python3-docker
+          - git
+      become: true
+  tasks:
+    - name: clone zuul
+      ansible.builtin.shell: git clone https://opendev.org/zuul/zuul
+      ignore_errors: true
+
+    - name: start zuul
+      ansible.builtin.shell: cd /home/ubuntu/zuul/doc/source/examples; sudo -E docker-compose -p zuul-tutorial up -d

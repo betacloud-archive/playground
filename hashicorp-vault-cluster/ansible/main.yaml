@@ -3,28 +3,13 @@
   hosts: all
   remote_user: ubuntu
   pre_tasks:
-    - name: update all packages
-      apt:
-        update_cache: true
-        name: '*'
-        state: latest
-      become: true
-
     - name: install some packages
       apt:
+        update_cache: true
         name:
           - apt-transport-https
           - docker.io
           - python3-docker
-          - tree
-          - jq
-      become: true
-
-    - name: start docker
-      service:
-        name: docker
-        enabled: true
-        state: started
       become: true
   roles:
     - name: setup vault cluster

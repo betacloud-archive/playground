@@ -1,15 +1,29 @@
+data "openstack_images_image_v2" "image" {
+  name        = var.image
+  most_recent = true
+}
+
 resource "openstack_compute_instance_v2" "instance" {
   count = var.counter
 
   name              = "${var.project}-${count.index}"
   flavor_name       = var.flavor
-  image_name        = var.image
+  image_id          = data.openstack_images_image_v2.image.id
   key_pair          = var.pubkey
   availability_zone = var.zone
   security_groups   = var.secgroups
 
   network {
     uuid = var.network
+  }
+
+  block_device {
+    boot_index            = 0
+    delete_on_termination = true
+    destination_type      = "volume"
+    volume_size           = var.disk_size
+    source_type           = "image"
+    uuid                  = data.openstack_images_image_v2.image.id
   }
 }
 

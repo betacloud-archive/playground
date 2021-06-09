@@ -25,3 +25,7 @@ variable "vip_pool" {
 variable "secgroups" {
   default = []
 }
+
+variable "disk_size" {
+  default = 10
+}
