@@ -1,1 +1,1 @@
-project = "beermann-zuul-ci"
+project = "beermann-zuul-ci-ansible"

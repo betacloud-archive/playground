@@ -17,3 +17,15 @@ variable "external_network_id" {
 variable "pubkey_path" {
   default = "~/.ssh/id_rsa.pub"
 }
+
+variable "flavor" {
+  default = "bms"
+}
+
+variable "image" {
+  default = "Ubuntu 20.04"
+}
+
+variable "instance_amount" {
+  default = 1
+}

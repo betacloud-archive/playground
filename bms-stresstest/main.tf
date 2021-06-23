@@ -26,14 +26,15 @@ module "subnet" {
 
 module "instance" {
   source = "../_tfmodules/openstack/instance"
+  count  = var.instance_amount
 
-  flavor_name    = module.flavor.flavor_name
-  image_id       = module.image.image_id
-  zone_hints     = var.zone
-  project        = var.project
-  pubkey         = module.publickey.public_key
-  secgroups      = [module.security_group.secgroup]
-  network_id     = module.network.id
+  flavor_name = var.flavor
+  image_id    = var.image
+  zone_hints  = var.zone
+  project     = var.project
+  pubkey      = module.publickey.public_key
+  secgroups   = [module.security_group.secgroup]
+  network_id  = module.network.id
 }
 
 module "router" {
