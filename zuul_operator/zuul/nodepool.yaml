@@ -1,0 +1,22 @@
+zookeeper-servers:
+  - host: zookeeper_1.example
+    port: 2281
+zookeeper-tls:
+  cert: /var/certs/certs/client.pem
+  key: /var/certs/keys/clientkey.pem
+  ca: /var/certs/certs/cacert.pem
+
+labels:  # we need this sub-key. limitation of to_nice_yaml library
+  - name: ubuntu-focal
+
+providers:  # we need this sub-key. limitation of to_nice_yaml library
+  - name: static-vms
+    driver: static
+    pools:
+      - name: main
+        nodes:
+          - name: 81.163.193.174
+            labels: ubuntu-focal  # make sure nodepool_labels has this
+            host-key-checking: false
+            python-path: /usr/bin/python3
+            username: root

@@ -1,12 +1,3 @@
-data "external" "get_os_tenant_name" {
-  program = ["sh", "-c", "echo '{\"return\":\"'$(env | grep OS_PROJECT_NAME | cut -d \"=\" -f 2)'\"}'"]
-}
-
-locals {
-  result  = data.external.get_os_tenant_name.result["return"]
-  network = "net-to-external-${local.result}"
-}
-
 resource "openstack_compute_instance_v2" "instance" {
   count = var.counter
 
@@ -18,7 +9,7 @@ resource "openstack_compute_instance_v2" "instance" {
   security_groups   = var.secgroups
 
   network {
-    name = local.network
+    name = "net-to-external-testbed"
   }
 }
 
