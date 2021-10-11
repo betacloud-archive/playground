@@ -1,0 +1,5 @@
+project_id = "d44630c0-165e-4d47-8a85-52f17afb051d"
+name = "beermann"
+flavor = "c3.small.x86"
+metro = "fr"
+image = "ubuntu_20_04"
